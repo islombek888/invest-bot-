@@ -872,6 +872,8 @@ bot.on('message', async (ctx) => {
     // Reset state
     resetUserState(userId);
 
+
+
     ctx.reply(
       `✅ **Pul yechish so'rovingiz adminga yuborildi.**\n` +
       `Biroz kuting, admin tomonidan to'lov amalga oshirilgach sizga xabar beriladi.`,
