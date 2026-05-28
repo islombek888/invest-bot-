@@ -1,6 +1,7 @@
 import { Telegraf, Markup } from 'telegraf';
 import { config } from './config';
 import { dbService, User, Investment } from './database/db';
+import http from 'http';
 
 if (!config.botToken) {
   console.error('ERROR: BOT_TOKEN is not set in .env file!');
@@ -1174,3 +1175,12 @@ bot.launch()
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
+// Start a dummy HTTP server for Render port binding to prevent deployment failure
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Bot is running successfully!\n');
+}).listen(PORT, () => {
+  console.log(`Web server listening on port ${PORT} to keep Render deployment alive.`);
+});
