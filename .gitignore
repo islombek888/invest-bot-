@@ -1,7 +1,11 @@
 node_modules/
 dist/
 database.db
-
 database.db-journal
 .env
 .DS_Store
+
+# Python
+venv/
+__pycache__/
+*.pyc
