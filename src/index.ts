@@ -130,7 +130,7 @@ bot.start((ctx) => {
     if (referrer) {
       const refBonus = parseFloat(dbService.getSetting('referral_bonus', config.referralBonus.toString()));
       dbService.updateBalance(referrerId, refBonus);
-      
+
       // Notify referrer
       bot.telegram.sendMessage(
         referrerId,
@@ -160,7 +160,7 @@ bot.command('admin', (ctx) => {
   if (ctx.from.id !== config.adminId) {
     return ctx.reply('❌ Kechirasiz, siz admin emassiz.');
   }
-  
+
   resetUserState(ctx.from.id);
   ctx.reply('👨‍💻 **Admin paneliga xush kelibsiz!**\n\nKerakli bo\'limni tanlang:', getAdminKeyboard());
 });
@@ -190,13 +190,13 @@ bot.command('give', (ctx) => {
 
   dbService.updateBalance(targetId, amount);
   ctx.reply(`✅ Foydalanuvchi ${targetUser.first_name} (ID: ${targetId}) balansiga **+${formatMoney(amount)}** qo'shildi.`, getAdminKeyboard());
-  
+
   bot.telegram.sendMessage(
     targetId,
     `💰 Balansingiz admin tomonidan **+${formatMoney(amount)}** ga ko'paytirildi!\n` +
     `Joriy balans: **${formatMoney(targetUser.balance + amount)}**`,
     { parse_mode: 'Markdown' }
-  ).catch(() => {});
+  ).catch(() => { });
 });
 
 // Admin command: /take <userId> <amount>
@@ -224,14 +224,14 @@ bot.command('take', (ctx) => {
 
   dbService.updateBalance(targetId, -amount);
   ctx.reply(`✅ Foydalanuvchi ${targetUser.first_name} (ID: ${targetId}) balansidan **-${formatMoney(amount)}** ayirildi.`, getAdminKeyboard());
-  
+
   const newBal = Math.max(0, targetUser.balance - amount);
   bot.telegram.sendMessage(
     targetId,
     `💰 Balansingizdan admin tomonidan **-${formatMoney(amount)}** ayirildi.\n` +
     `Joriy balans: **${formatMoney(newBal)}**`,
     { parse_mode: 'Markdown' }
-  ).catch(() => {});
+  ).catch(() => { });
 });
 
 // Admin command: /setbal <userId> <amount>
@@ -259,12 +259,12 @@ bot.command('setbal', (ctx) => {
 
   dbService.setBalance(targetId, amount);
   ctx.reply(`✅ Foydalanuvchi ${targetUser.first_name} (ID: ${targetId}) balansi **${formatMoney(amount)}** qilib o'rnatildi.`, getAdminKeyboard());
-  
+
   bot.telegram.sendMessage(
     targetId,
     `💰 Balansingiz admin tomonidan **${formatMoney(amount)}** qilib o'rnatildi!`,
     { parse_mode: 'Markdown' }
-  ).catch(() => {});
+  ).catch(() => { });
 });
 
 
@@ -285,7 +285,7 @@ bot.hears('🔙 Foydalanuvchi menyusi', (ctx) => {
 bot.hears('📊 Statistika', (ctx) => {
   if (ctx.from.id !== config.adminId) return;
   const stats = dbService.getStats();
-  
+
   ctx.reply(
     `📊 **Bot Statistikasi:**\n\n` +
     `👥 **Jami foydalanuvchilar:** ${stats.totalUsers} ta\n` +
@@ -298,10 +298,10 @@ bot.hears('📊 Statistika', (ctx) => {
 
 bot.hears('💳 Karta o\'zgartirish', (ctx) => {
   if (ctx.from.id !== config.adminId) return;
-  
+
   const currentCard = dbService.getSetting('card_details', config.cardDetails);
   setUserState(ctx.from.id, { state: 'ADMIN_CARD_CHANGE' });
-  
+
   ctx.reply(
     `💳 **Karta raqamini o'zgartirish:**\n\n` +
     `Joriy karta ma'lumotlari:\n` +
@@ -313,11 +313,11 @@ bot.hears('💳 Karta o\'zgartirish', (ctx) => {
 
 bot.hears('⚙️ Sozlamalar', (ctx) => {
   if (ctx.from.id !== config.adminId) return;
-  
+
   const minDep = parseFloat(dbService.getSetting('min_deposit', config.minDeposit.toString()));
   const minWith = parseFloat(dbService.getSetting('min_withdrawal', config.minWithdrawal.toString()));
   const refBonus = parseFloat(dbService.getSetting('referral_bonus', config.referralBonus.toString()));
-  
+
   ctx.reply(
     `⚙️ **Tizim Sozlamalari:**\n\n` +
     `💳 **Minimal depozit:** ${formatMoney(minDep)}\n` +
@@ -330,7 +330,7 @@ bot.hears('⚙️ Sozlamalar', (ctx) => {
 
 bot.hears('📢 Xabar yuborish', (ctx) => {
   if (ctx.from.id !== config.adminId) return;
-  
+
   setUserState(ctx.from.id, { state: 'ADMIN_BROADCAST' });
   ctx.reply(
     `📢 **Foydalanuvchilarga xabar yuborish:**\n\n` +
@@ -341,7 +341,7 @@ bot.hears('📢 Xabar yuborish', (ctx) => {
 
 bot.hears('🔍 Foydalanuvchi qidirish', (ctx) => {
   if (ctx.from.id !== config.adminId) return;
-  
+
   setUserState(ctx.from.id, { state: 'ADMIN_USER_LOOKUP' });
   ctx.reply(
     `🔍 **Foydalanuvchini qidirish:**\n\n` +
@@ -393,10 +393,10 @@ bot.hears('👤 Kabinet', (ctx) => {
   if (!user) {
     user = dbService.createUser(userId, ctx.from.username || null, ctx.from.first_name);
   }
-  
+
   const refCount = dbService.getReferralCount(userId);
   const activeInvs = dbService.getUserInvestments(userId).filter(i => i.status === 'active');
-  
+
   ctx.reply(
     `👤 **Sizning Kabinetingiz:**\n\n` +
     `🆔 **ID:** \`${user.id}\`\n` +
@@ -412,11 +412,11 @@ bot.hears('👥 Referal Tizimi', (ctx) => {
   const userId = ctx.from.id;
   const refCount = dbService.getReferralCount(userId);
   const refBonus = parseFloat(dbService.getSetting('referral_bonus', config.referralBonus.toString()));
-  
+
   // Create referral link
   const botUsername = ctx.botInfo.username;
   const refLink = `https://t.me/${botUsername}?start=ref_${userId}`;
-  
+
   ctx.reply(
     `👥 **Hamkorlik (Referal) Dasturi:**\n\n` +
     `Do'stlaringizni botga taklif qiling va har bir muvaffaqiyatli ro'yxatdan o'tgan do'stingiz uchun **${formatMoney(refBonus)}** bonus oling!\n\n` +
@@ -432,9 +432,9 @@ bot.hears('💳 Depozit', (ctx) => {
   const userId = ctx.from.id;
   const currentCard = dbService.getSetting('card_details', config.cardDetails);
   const minDep = parseFloat(dbService.getSetting('min_deposit', config.minDeposit.toString()));
-  
+
   setUserState(userId, { state: 'DEPOSIT_AMOUNT' });
-  
+
   ctx.reply(
     `💳 **Balansni to'ldirish (Depozit):**\n\n` +
     `Siz bizning rasmiy kartamizga pul o'tkazishingiz kerak:\n` +
@@ -450,9 +450,9 @@ bot.hears('💸 Pul Yechish', (ctx) => {
   const userId = ctx.from.id;
   const user = dbService.getUser(userId);
   if (!user) return;
-  
+
   const minWith = parseFloat(dbService.getSetting('min_withdrawal', config.minWithdrawal.toString()));
-  
+
   if (user.balance < minWith) {
     return ctx.reply(
       `❌ **Balansingiz yetarli emas!**\n\n` +
@@ -460,7 +460,7 @@ bot.hears('💸 Pul Yechish', (ctx) => {
       `Sizning balansingiz: **${formatMoney(user.balance)}**`
     );
   }
-  
+
   setUserState(userId, { state: 'WITHDRAWAL_CARD' });
   ctx.reply(
     `💸 **Pul yechish (Kassa):**\n\n` +
@@ -475,11 +475,11 @@ bot.hears('📈 Investitsiya', (ctx) => {
   const userId = ctx.from.id;
   const user = dbService.getUser(userId);
   if (!user) return;
-  
+
   const userInvs = dbService.getUserInvestments(userId);
   const activeInvs = userInvs.filter(i => i.status === 'active');
   const minDep = parseFloat(dbService.getSetting('min_deposit', config.minDeposit.toString()));
-  
+
   let msg = `📈 **Investitsiya bo'limi**\n\n` +
     `Sarmoya kiriting va pulingizni har kuni **25%** ga ko'paytiring!\n` +
     `⏳ Minimal investitsiya muddati: **7 kun**.\n` +
@@ -491,7 +491,7 @@ bot.hears('📈 Investitsiya', (ctx) => {
     `  💰 Yakunda balansingizga qo'shiladi: **275,000 so'm**\n\n` +
     `💵 Sizning balansingiz: **${formatMoney(user.balance)}**\n` +
     `⚠️ Minimal investitsiya miqdori: **${formatMoney(minDep)}**\n\n`;
-    
+
   if (activeInvs.length > 0) {
     msg += `💼 **Sizning faol investitsiyalaringiz:**\n`;
     activeInvs.forEach((inv, index) => {
@@ -501,7 +501,7 @@ bot.hears('📈 Investitsiya', (ctx) => {
       const actualElapsed = Math.min(elapsedDays, inv.duration_days);
       const currentProfit = inv.amount * 0.25 * actualElapsed;
       const expectedTotal = inv.amount * (1 + 0.25 * inv.duration_days);
-      
+
       msg += `\n${index + 1}. **ID: #INV_${inv.id}**\n` +
         `   Sarmoya: ${formatMoney(inv.amount)}\n` +
         `   Kunlar: ${actualElapsed}/${inv.duration_days} kun o'tdi\n` +
@@ -511,7 +511,7 @@ bot.hears('📈 Investitsiya', (ctx) => {
     });
     msg += `\n`;
   }
-  
+
   setUserState(userId, { state: 'INVEST_AMOUNT' });
   ctx.reply(
     msg + `💰 **Investitsiya qilmoqchi bo'lgan miqdoringizni yozing:**\n(Faqat raqamlar bilan, masalan: 100000):`,
@@ -522,26 +522,26 @@ bot.hears('📈 Investitsiya', (ctx) => {
 // Inline actions for Admin User Lookup
 bot.action(/^admin_bal_(add|sub|set)_(\d+)$/, (ctx) => {
   if (ctx.from.id !== config.adminId) return;
-  
+
   const action = ctx.match[1] as 'add' | 'sub' | 'set';
   const targetId = parseInt(ctx.match[2], 10);
-  
+
   const user = dbService.getUser(targetId);
   if (!user) {
     return ctx.reply('❌ Foydalanuvchi topilmadi.');
   }
-  
+
   setUserState(ctx.from.id, {
     state: 'ADMIN_CHANGE_BALANCE_AMOUNT',
     lookupUserId: targetId,
     lookupUserAction: action
   });
-  
+
   let actionText = '';
   if (action === 'add') actionText = "qo'shmoqchi bo'lgan";
   if (action === 'sub') actionText = "ayirmoqchi bo'lgan";
   if (action === 'set') actionText = "o'rnatmoqchi bo'lgan yangi";
-  
+
   ctx.answerCbQuery();
   ctx.reply(
     `💰 Foydalanuvchi: ${user.first_name} (${user.id})\n` +
@@ -554,24 +554,24 @@ bot.action(/^admin_bal_(add|sub|set)_(\d+)$/, (ctx) => {
 // Approve/Reject Inline Actions for Deposits
 bot.action(/^deposit_app_(\d+)$/, async (ctx) => {
   if (ctx.from.id !== config.adminId) return;
-  
+
   const depositId = parseInt(ctx.match[1], 10);
   const deposit = dbService.getDeposit(depositId);
-  
+
   if (!deposit) {
     return ctx.reply('❌ Depozit so\'rovi topilmadi.');
   }
-  
+
   if (deposit.status !== 'pending') {
     return ctx.reply(`❌ Bu so'rov allaqachon qayta ishlangan. Holat: ${deposit.status}`);
   }
-  
+
   // Approve
   dbService.updateDepositStatus(depositId, 'approved');
   dbService.updateBalance(deposit.user_id, deposit.amount);
-  
+
   ctx.answerCbQuery('Depozit tasdiqlandi');
-  
+
   // Edit admin message
   try {
     await ctx.editMessageCaption(
@@ -582,7 +582,7 @@ bot.action(/^deposit_app_(\d+)$/, async (ctx) => {
   } catch (e) {
     ctx.reply(`✅ Depozit #${depositId} tasdiqlandi.`);
   }
-  
+
   // Notify User
   bot.telegram.sendMessage(
     deposit.user_id,
@@ -595,23 +595,23 @@ bot.action(/^deposit_app_(\d+)$/, async (ctx) => {
 
 bot.action(/^deposit_rej_(\d+)$/, async (ctx) => {
   if (ctx.from.id !== config.adminId) return;
-  
+
   const depositId = parseInt(ctx.match[1], 10);
   const deposit = dbService.getDeposit(depositId);
-  
+
   if (!deposit) {
     return ctx.reply('❌ Depozit so\'rovi topilmadi.');
   }
-  
+
   if (deposit.status !== 'pending') {
     return ctx.reply(`❌ Bu so'rov allaqachon qayta ishlangan. Holat: ${deposit.status}`);
   }
-  
+
   // Reject
   dbService.updateDepositStatus(depositId, 'rejected');
-  
+
   ctx.answerCbQuery('Depozit rad etildi');
-  
+
   // Edit admin message
   try {
     await ctx.editMessageCaption(
@@ -623,7 +623,7 @@ bot.action(/^deposit_rej_(\d+)$/, async (ctx) => {
   } catch (e) {
     ctx.reply(`❌ Depozit #${depositId} rad etildi.`);
   }
-  
+
   // Notify User
   bot.telegram.sendMessage(
     deposit.user_id,
@@ -637,23 +637,23 @@ bot.action(/^deposit_rej_(\d+)$/, async (ctx) => {
 // Approve/Reject Inline Actions for Withdrawals
 bot.action(/^withdraw_app_(\d+)$/, async (ctx) => {
   if (ctx.from.id !== config.adminId) return;
-  
+
   const withdrawalId = parseInt(ctx.match[1], 10);
   const withdrawal = dbService.getWithdrawal(withdrawalId);
-  
+
   if (!withdrawal) {
     return ctx.reply('❌ Pul yechish so\'rovi topilmadi.');
   }
-  
+
   if (withdrawal.status !== 'pending') {
     return ctx.reply(`❌ Bu so'rov allaqachon qayta ishlangan. Holat: ${withdrawal.status}`);
   }
-  
+
   // Approve
   dbService.updateWithdrawalStatus(withdrawalId, 'approved');
-  
+
   ctx.answerCbQuery('Pul yechish tasdiqlandi');
-  
+
   // Edit admin message
   try {
     await ctx.editMessageText(
@@ -666,7 +666,7 @@ bot.action(/^withdraw_app_(\d+)$/, async (ctx) => {
   } catch (e) {
     ctx.reply(`✅ Pul yechish #${withdrawalId} tasdiqlandi.`);
   }
-  
+
   // Notify User
   bot.telegram.sendMessage(
     withdrawal.user_id,
@@ -680,24 +680,24 @@ bot.action(/^withdraw_app_(\d+)$/, async (ctx) => {
 
 bot.action(/^withdraw_rej_(\d+)$/, async (ctx) => {
   if (ctx.from.id !== config.adminId) return;
-  
+
   const withdrawalId = parseInt(ctx.match[1], 10);
   const withdrawal = dbService.getWithdrawal(withdrawalId);
-  
+
   if (!withdrawal) {
     return ctx.reply('❌ Pul yechish so\'rovi topilmadi.');
   }
-  
+
   if (withdrawal.status !== 'pending') {
     return ctx.reply(`❌ Bu so'rov allaqachon qayta ishlangan. Holat: ${withdrawal.status}`);
   }
-  
+
   // Reject & Refund to User
   dbService.updateWithdrawalStatus(withdrawalId, 'rejected');
   dbService.updateBalance(withdrawal.user_id, withdrawal.amount);
-  
+
   ctx.answerCbQuery('Pul yechish rad etildi, pul qaytarildi');
-  
+
   // Edit admin message
   try {
     await ctx.editMessageText(
@@ -710,7 +710,7 @@ bot.action(/^withdraw_rej_(\d+)$/, async (ctx) => {
   } catch (e) {
     ctx.reply(`❌ Pul yechish #${withdrawalId} rad etildi, mablag' qaytarildi.`);
   }
-  
+
   // Notify User
   bot.telegram.sendMessage(
     withdrawal.user_id,
@@ -725,19 +725,19 @@ bot.action(/^withdraw_rej_(\d+)$/, async (ctx) => {
 bot.on('message', async (ctx) => {
   const userId = ctx.from.id;
   const userState = getUserState(userId);
-  
+
   // Handle Admin Broadcast
   if (userState.state === 'ADMIN_BROADCAST') {
     if (ctx.from.id !== config.adminId) return;
-    
+
     resetUserState(userId);
     ctx.reply('⏳ Xabar barcha foydalanuvchilarga yuborilmoqda. Iltimos kuting...');
-    
+
     const userIds = dbService.getAllUserIds();
-    
+
     let success = 0;
     let failed = 0;
-    
+
     for (const targetUserId of userIds) {
       try {
         await ctx.copyMessage(targetUserId);
@@ -746,7 +746,7 @@ bot.on('message', async (ctx) => {
         failed++;
       }
     }
-    
+
     ctx.reply(
       `📢 **Xabar tarqatish yakunlandi!**\n\n` +
       `✅ Muvaffaqiyatli: ${success} ta\n` +
@@ -755,23 +755,23 @@ bot.on('message', async (ctx) => {
     );
     return;
   }
-  
+
   // Handle text-based states
   const text = ('text' in ctx.message) ? ctx.message.text : '';
-  
+
   // Handle deposit amount input
   if (userState.state === 'DEPOSIT_AMOUNT') {
     const amount = parseFloat(text);
     const minDep = parseFloat(dbService.getSetting('min_deposit', config.minDeposit.toString()));
-    
+
     if (isNaN(amount) || amount <= 0) {
       return ctx.reply('❌ Iltimos, musbat raqam kiriting (masalan: 50000):');
     }
-    
+
     if (amount < minDep) {
       return ctx.reply(`❌ Minimal depozit miqdori: **${formatMoney(minDep)}**.\nIltimos, qayta kiriting:`, { parse_mode: 'Markdown' });
     }
-    
+
     setUserState(userId, { state: 'DEPOSIT_SCREENSHOT', depositAmount: amount });
     ctx.reply(
       `💸 Katta rahmat!\n` +
@@ -781,30 +781,30 @@ bot.on('message', async (ctx) => {
     );
     return;
   }
-  
+
   // Handle deposit screenshot input (if they sent text instead of photo)
   if (userState.state === 'DEPOSIT_SCREENSHOT' && !('photo' in ctx.message)) {
     return ctx.reply('❌ Iltimos, faqat rasm (screenshot) shaklida to\'lov chekini yuboring. Amaldagi chekni bekor qilish uchun pastdagi tugmani bosing:');
   }
-  
+
   // Handle deposit screenshot photo upload
   if (userState.state === 'DEPOSIT_SCREENSHOT' && 'photo' in ctx.message) {
     const photos = ctx.message.photo;
     const photoFileId = photos[photos.length - 1].file_id;
     const amount = userState.depositAmount!;
-    
+
     // Save to Database
     const deposit = dbService.createDeposit(userId, amount, photoFileId);
-    
+
     // Reset state
     resetUserState(userId);
-    
+
     ctx.reply(
       `✅ **To'lov ma'lumotlari adminga tasdiqlash uchun yuborildi.**\n` +
       `Iltimos biroz kuting, admin tomonidan tekshirilib tasdiqlangach pul hisobingizga tushadi.`,
       { parse_mode: 'Markdown', ...getUserKeyboard() }
     );
-    
+
     // Notify Admin
     bot.telegram.sendPhoto(
       config.adminId,
@@ -826,15 +826,15 @@ bot.on('message', async (ctx) => {
     ).catch(err => console.error('Failed to notify admin about new deposit:', err));
     return;
   }
-  
+
   // Handle withdrawal card input
   if (userState.state === 'WITHDRAWAL_CARD') {
     if (!text || text.trim().length < 8) {
       return ctx.reply('❌ Iltimos, to\'g\'ri karta ma\'lumotlarini kiriting (masalan: 8600123456789012):');
     }
-    
+
     setUserState(userId, { state: 'WITHDRAWAL_AMOUNT', withdrawCard: text });
-    
+
     const user = dbService.getUser(userId)!;
     ctx.reply(
       `💳 Karta: \`${text}\`\n\n` +
@@ -844,52 +844,53 @@ bot.on('message', async (ctx) => {
     );
     return;
   }
-  
+
   // Handle withdrawal amount input
   if (userState.state === 'WITHDRAWAL_AMOUNT') {
     const amount = parseFloat(text);
     const user = dbService.getUser(userId)!;
     const minWith = parseFloat(dbService.getSetting('min_withdrawal', config.minWithdrawal.toString()));
-    
+
     if (isNaN(amount) || amount <= 0) {
       return ctx.reply('❌ Iltimos, musbat son yozing (masalan: 50000):');
     }
-    
+
     if (amount < minWith) {
       return ctx.reply(`❌ Minimal yechish miqdori: **${formatMoney(minWith)}**.\nQayta kiriting:`);
     }
-    
+
     if (amount > user.balance) {
       return ctx.reply(`❌ Balansingizda mablag' yetarli emas!\nBalansingiz: **${formatMoney(user.balance)}**\nQayta kiriting:`);
     }
-    
+
     // Deduct balance immediately
     dbService.updateBalance(userId, -amount);
-    
+
     // Save to Database
     const withdrawal = dbService.createWithdrawal(userId, amount, userState.withdrawCard!);
-    
+
     // Reset state
     resetUserState(userId);
-    
+
     ctx.reply(
       `✅ **Pul yechish so'rovingiz adminga yuborildi.**\n` +
       `Biroz kuting, admin tomonidan to'lov amalga oshirilgach sizga xabar beriladi.`,
       getUserKeyboard()
     );
-    
+
     // Notify Admin
     bot.telegram.sendMessage(
       config.adminId,
       `📤 **Yangi Pul Yechish So'rovi (ID: #${withdrawal.id})**\n\n` +
-        `👤 Foydalanuvchi: ${ctx.from.first_name} ${ctx.from.username ? `(@${ctx.from.username})` : ''}\n` +
-        `🆔 Telegram ID: \`${userId}\`\n` +
-        `💳 Karta: \`${userState.withdrawCard}\`\n` +
-        `💰 Yechish miqdori: **${formatMoney(amount)}**\n\n` +
-        `To'lovni amalga oshirgach quyidagi tugmalarni bosing:`,
+      `👤 Foydalanuvchi: ${ctx.from.first_name} ${ctx.from.username ? `(@${ctx.from.username})` : ''}\n` +
+      `🆔 Telegram ID: \`${userId}\`\n` +
+      `💳 Karta: \`${userState.withdrawCard}\`\n` +
+      `💰 Yechish miqdori: **${formatMoney(amount)}**\n\n` +
+      `To'lovni amalga oshirgach quyidagi tugmalarni bosing:`,
       {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
+
           [
             Markup.button.callback('✅ To\'lov qilindi (Tasdiqlash)', `withdraw_app_${withdrawal.id}`),
             Markup.button.callback('❌ Rad etish (Pulni qaytarish)', `withdraw_rej_${withdrawal.id}`)
@@ -899,25 +900,25 @@ bot.on('message', async (ctx) => {
     ).catch(err => console.error('Failed to notify admin about new withdrawal:', err));
     return;
   }
-  
+
   // Handle investment amount input
   if (userState.state === 'INVEST_AMOUNT') {
     const amount = parseFloat(text);
     const user = dbService.getUser(userId)!;
     const minDep = parseFloat(dbService.getSetting('min_deposit', config.minDeposit.toString()));
-    
+
     if (isNaN(amount) || amount <= 0) {
       return ctx.reply('❌ Iltimos, musbat raqam kiriting (masalan: 100000):');
     }
-    
+
     if (amount < minDep) {
       return ctx.reply(`❌ Minimal investitsiya miqdori: **${formatMoney(minDep)}**.\nQayta kiriting:`);
     }
-    
+
     if (amount > user.balance) {
       return ctx.reply(`❌ Balansingizda sarmoya kiritish uchun yetarli mablag' yo'q!\nBalansingiz: **${formatMoney(user.balance)}**\nIltimos, avval depozit qiling yoki kamroq miqdor kiriting:`);
     }
-    
+
     setUserState(userId, { state: 'INVEST_DURATION', investAmount: amount });
     ctx.reply(
       `💰 Sarmoya miqdori: **${formatMoney(amount)}**\n\n` +
@@ -929,37 +930,37 @@ bot.on('message', async (ctx) => {
     );
     return;
   }
-  
+
   // Handle investment duration input
   if (userState.state === 'INVEST_DURATION') {
     const days = parseInt(text, 10);
-    
+
     if (isNaN(days) || days < 7) {
       return ctx.reply('❌ Eng kam investitsiya muddati 7 kun bo\'lishi kerak. Iltimos, 7 yoki undan katta son kiriting:');
     }
-    
+
     const amount = userState.investAmount!;
     const user = dbService.getUser(userId)!;
-    
+
     // Double check balance just in case
     if (amount > user.balance) {
       resetUserState(userId);
       return ctx.reply('❌ Xatolik: Balansingizda yetarli mablag\' qolmadi.', getUserKeyboard());
     }
-    
+
     // Deduct balance
     dbService.updateBalance(userId, -amount);
-    
+
     // Create investment
     const inv = dbService.createInvestment(userId, amount, days);
-    
+
     // Reset state
     resetUserState(userId);
-    
+
     const dailyProfit = amount * 0.25;
     const totalProfit = dailyProfit * days;
     const expectedPayout = amount + totalProfit;
-    
+
     ctx.reply(
       `✅ **Investitsiya muvaffaqiyatli boshlandi!**\n\n` +
       `📈 Investitsiya ID: \`#INV_${inv.id}\`\n` +
@@ -974,22 +975,22 @@ bot.on('message', async (ctx) => {
     );
     return;
   }
-  
+
   // Handle Admin Card Change
   if (userState.state === 'ADMIN_CARD_CHANGE') {
     if (ctx.from.id !== config.adminId) return;
-    
+
     if (!text || text.trim().length === 0) {
       return ctx.reply('❌ Karta ma\'lumotlari bo\'sh bo\'lishi mumkin emas. Iltimos yozing:');
     }
-    
+
     dbService.setSetting('card_details', text);
     resetUserState(ctx.from.id);
-    
+
     ctx.reply(`✅ **Karta ma'lumotlari yangilandi!**\n\nYangi karta:\n\`${text}\``, { parse_mode: 'Markdown', ...getAdminKeyboard() });
     return;
   }
-  
+
   // Handle Admin setting changes
   if (userState.state === 'ADMIN_SET_MIN_DEP') {
     if (ctx.from.id !== config.adminId) return;
@@ -1002,7 +1003,7 @@ bot.on('message', async (ctx) => {
     ctx.reply(`✅ **Minimal depozit miqdori o'rnatildi:** ${formatMoney(val)}`, getAdminKeyboard());
     return;
   }
-  
+
   if (userState.state === 'ADMIN_SET_MIN_WITHDRAW') {
     if (ctx.from.id !== config.adminId) return;
     const val = parseFloat(text);
@@ -1014,7 +1015,7 @@ bot.on('message', async (ctx) => {
     ctx.reply(`✅ **Minimal yechish miqdori o'rnatildi:** ${formatMoney(val)}`, getAdminKeyboard());
     return;
   }
-  
+
   if (userState.state === 'ADMIN_SET_REF_BONUS') {
     if (ctx.from.id !== config.adminId) return;
     const val = parseFloat(text);
@@ -1026,7 +1027,7 @@ bot.on('message', async (ctx) => {
     ctx.reply(`✅ **Referal bonus miqdori o'rnatildi:** ${formatMoney(val)}`, getAdminKeyboard());
     return;
   }
-  
+
   if (userState.state === 'ADMIN_SET_MIN_REF') {
     if (ctx.from.id !== config.adminId) return;
     const val = parseInt(text, 10);
@@ -1038,27 +1039,27 @@ bot.on('message', async (ctx) => {
     ctx.reply(`✅ **Minimal referal soni o'rnatildi:** ${val} ta`, getAdminKeyboard());
     return;
   }
-  
+
   // Handle Admin User Lookup
   if (userState.state === 'ADMIN_USER_LOOKUP') {
     if (ctx.from.id !== config.adminId) return;
-    
+
     let targetUser: User | null = null;
     const parsedId = parseInt(text, 10);
-    
+
     if (!isNaN(parsedId)) {
       targetUser = dbService.getUser(parsedId);
     } else {
       targetUser = dbService.getUserByUsername(text);
     }
-    
+
     if (!targetUser) {
       return ctx.reply('❌ Bunday foydalanuvchi topilmadi. Qayta kiriting (ID yoki username):');
     }
-    
+
     resetUserState(ctx.from.id);
     const refCount = dbService.getReferralCount(targetUser.id);
-    
+
     ctx.reply(
       `🔍 **Foydalanuvchi ma'lumotlari:**\n\n` +
       `👤 Ism: ${targetUser.first_name}\n` +
@@ -1084,39 +1085,39 @@ bot.on('message', async (ctx) => {
     );
     return;
   }
-  
+
   // Handle Admin Change Balance Amount
   if (userState.state === 'ADMIN_CHANGE_BALANCE_AMOUNT') {
     if (ctx.from.id !== config.adminId) return;
     const amount = parseFloat(text);
-    
+
     if (isNaN(amount) || amount < 0) {
       return ctx.reply('❌ Iltimos, musbat raqam kiriting:');
     }
-    
+
     const targetId = userState.lookupUserId!;
     const action = userState.lookupUserAction!;
-    
+
     const targetUser = dbService.getUser(targetId);
     if (!targetUser) {
       resetUserState(ctx.from.id);
       return ctx.reply('❌ Foydalanuvchi topilmadi.', getAdminKeyboard());
     }
-    
+
     if (action === 'add') {
       dbService.updateBalance(targetId, amount);
       ctx.reply(`✅ ${targetUser.first_name} balansiga **+${formatMoney(amount)}** qo'shildi.`, getAdminKeyboard());
-      bot.telegram.sendMessage(targetId, `💰 Balansingizga admin tomonidan **+${formatMoney(amount)}** qo'shildi!`).catch(() => {});
+      bot.telegram.sendMessage(targetId, `💰 Balansingizga admin tomonidan **+${formatMoney(amount)}** qo'shildi!`).catch(() => { });
     } else if (action === 'sub') {
       dbService.updateBalance(targetId, -amount);
       ctx.reply(`✅ ${targetUser.first_name} balansidan **-${formatMoney(amount)}** ayirildi.`, getAdminKeyboard());
-      bot.telegram.sendMessage(targetId, `💰 Balansingizdan admin tomonidan **-${formatMoney(amount)}** ayirildi.`).catch(() => {});
+      bot.telegram.sendMessage(targetId, `💰 Balansingizdan admin tomonidan **-${formatMoney(amount)}** ayirildi.`).catch(() => { });
     } else if (action === 'set') {
       dbService.setBalance(targetId, amount);
       ctx.reply(`✅ ${targetUser.first_name} balansi **${formatMoney(amount)}** deb belgilandi.`, getAdminKeyboard());
-      bot.telegram.sendMessage(targetId, `💰 Balansingiz admin tomonidan **${formatMoney(amount)}** qilib o'rnatildi!`).catch(() => {});
+      bot.telegram.sendMessage(targetId, `💰 Balansingiz admin tomonidan **${formatMoney(amount)}** qilib o'rnatildi!`).catch(() => { });
     }
-    
+
     resetUserState(ctx.from.id);
     return;
   }
@@ -1134,9 +1135,9 @@ async function checkCompletedInvestments() {
         const dailyProfit = inv.amount * 0.25;
         const totalProfit = dailyProfit * inv.duration_days;
         const payout = inv.amount + totalProfit;
-        
+
         dbService.updateBalance(inv.user_id, payout);
-        
+
         // Notify user
         try {
           await bot.telegram.sendMessage(
